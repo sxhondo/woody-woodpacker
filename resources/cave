@@ -1,0 +1,32 @@
+                Target program's structure
+                     after infection
+
+                    +----------------+
+                    |     Header     |
+    Original -----> +----------------+ <---+  Return to 
+    start           |     .text      |     |  original start
+                    +----------------+     |  after shellcode
+                    |     .rdata     |     |  finishes execution
+                    +----------------+     |
+                    |       ...      |     |
+                    +----------------+     |
+                    |      .tls      |     |
+    New start ----> +-   -   -   -   + ----+
+                    |    shellcode   |
+                    +----------------+
+                         ^   ^   ^
+                Injected shellcode goes here
+                  inside the .tls section 
+
+1. Open file to read and write
+2. Extract PE file information
+3. Find a suitably-sized code cave
+4. Tailor shellcode to the target application
+5. Acquire any additional data for the shellcode to function
+6. Inject the shellcode into the application
+7. Modify the application's original entry point to the start of the shellcode
+
+Find the padding area between the .text segment and the next segment in the program (that is usually .data).
+Append the payload code to the end of the .text segment (in that padding area)
+Patch the ELF binary to run the injected coded at start up (modify the ELF entry point)
+Patch the payload to return execution to the original ELF entry point

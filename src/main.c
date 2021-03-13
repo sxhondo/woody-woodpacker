@@ -1,14 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
-
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-
-#include <elf.h>
-#include <sys/mman.h>
+#include "woody-woodpacker.h"
 
 /* PT_LOAD segments are those that are directly loaded from the file. Other segments like the ones 
    containing the stack or the .bss section are not stored in the file, 
@@ -120,47 +110,47 @@ main(int argc, char **argv)
    }
 
    /* PROCESS TARGET */
-   /* Open and map target ELF and payload */
-   int target_fd = open_and_map(argv[1], &d, &fsize);
+   /* Open and map target ELF */
+   int target_fd = open_duplicate_and_map(argv[1], &d, &fsize);
 
-   // /* Get Application Entry point */
-   // Elf64_Ehdr *elf_hdr = (Elf64_Ehdr *) d;
-   // Elf64_Addr ep = elf_hdr->e_entry;
-   // printf ("+ Target Entry point: %p\n", (void*) ep);
+   /* Get Application Entry point */
+   Elf64_Ehdr *elf_hdr = (Elf64_Ehdr *) d;
+   Elf64_Addr ep = elf_hdr->e_entry;
+   printf ("+ Target Entry point: %p\n", (void*) ep);
 
-   // Elf64_Phdr  *t_text_seg = elfi_find_gap(d, fsize, &p, &len);
-   // Elf64_Addr  base = t_text_seg->p_vaddr;
-   // printf ("+ Base Address : %p\n", (void*)base);
+   Elf64_Phdr  *t_text_seg = elfi_find_gap(d, fsize, &p, &len);
+   Elf64_Addr  base = t_text_seg->p_vaddr;
+   printf ("+ Base Address : %p\n", (void*)base);
 
-   // /* PROCESS PAYLOAD */
-   // int payload_fd = elfi_open_and_map(argv[2], &d1, &fsize1);
-   // Elf64_Shdr *p_text_sec = elfi_find_section(d1, ".text");
+   /* PROCESS PAYLOAD */
+   int payload_fd = open_and_map(argv[2], &d1, &fsize1);
+   Elf64_Shdr *p_text_sec = elfi_find_section(d1, ".text");
 
-   // /* XXX: Looks like we do not really have to patch the segment sizes */
-   // /*
-   //    t_text_seg->p_filesz += p_text_sec->sh_size;
-   //    t_text_seg->p_memsz += p_text_sec->sh_size;
-   // */
-   // printf ("+ Payload .text section found at %lx (%lx bytes)\n", 
-   //    p_text_sec->sh_offset, p_text_sec->sh_size);
+   /* XXX: Looks like we do not really have to patch the segment sizes */
+   /*
+      t_text_seg->p_filesz += p_text_sec->sh_size;
+      t_text_seg->p_memsz += p_text_sec->sh_size;
+   */
+   printf ("+ Payload .text section found at %lx (%lx bytes)\n",
+      p_text_sec->sh_offset, p_text_sec->sh_size);
 
-   // if (p_text_sec->sh_size > len)
-   // {
-   //    fprintf(stderr, " - Payload is too big, cannot infect file\n");
-   //    exit(1);
-   // }
+   if (p_text_sec->sh_size > len)
+   {
+      fprintf(stderr, " - Payload is too big, cannot infect file\n");
+      exit(1);
+   }
    
-   // /* Copy payload in the segment padding area */
-   // memmove(d + p, d1 + p_text_sec->sh_offset, p_text_sec->sh_size);
+   /* Copy payload in the segment padding area */
+   memmove(d + p, d1 + p_text_sec->sh_offset, p_text_sec->sh_size);
 
-   // /* Patch return address */
-   // elfi_mem_subst(d + p, p_text_sec->sh_size, 0x11111111, (long)ep);
+   /* Patch return address */
+   elfi_mem_subst(d + p, p_text_sec->sh_size, 0x11111111, (long)ep);
 
-   // /* Patch entry point */
-   // elf_hdr->e_entry = (Elf64_Addr) (base + p);
+   /* Patch entry point */
+   elf_hdr->e_entry = (Elf64_Addr) (base + p);
    
-   // /* Close files and actually update target file */
-   // close(payload_fd);
+   /* Close files and actually update target file */
+   close(payload_fd);
    close(target_fd);
    return 0;
 }

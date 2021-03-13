@@ -15,6 +15,5 @@ _start:
    mov rdi, 42
    syscall
 
-align 8
-   msg db 'This file is infected', 0x0a, 0
-   msg_end db 0x0
+msg db 'This file is infected', 0x0a, 0
+msg_end db 0x0

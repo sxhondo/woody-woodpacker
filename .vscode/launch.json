@@ -10,7 +10,7 @@
          "name": "(lldb) Launch",
          "program": "${workspaceFolder}/injector",
          "args": [
-            "resources/sample64",
+            "resources/pie-sample64",
             "payload"
          ],
          "cwd": "${workspaceFolder}"

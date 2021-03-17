@@ -16,7 +16,7 @@ $(PAYLOAD): payload.s
 	nasm -f elf64 -o payload.o payload.s && ld -o payload payload.o
 
 $(SAMPLE): resources/sample.c Makefile
-	gcc -g resources/sample.c -o resources/sample64
+	$(CC) -no-pie resources/sample.c -o resources/no-pie-sample64
 
 clean:
 	rm -f $(NAME)

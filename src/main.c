@@ -141,13 +141,10 @@ main(int argc, char **argv)
                                     p_text_sec->sh_size, (long)ep);
 
    printf("+ e_entry set to: %p\n", (void *)(base + cc_offset));
-   // t_ehdr->e_entry = (Elf64_Addr)(base + cc_offset);
+   t_ehdr->e_entry = (Elf64_Addr)(base + cc_offset);
    
    close(payload_fd);
    close(target_fd);
    
    return 0;
 }
-
-// 0x0000555555555149
-// 0x0000555555555149

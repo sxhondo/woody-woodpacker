@@ -7,7 +7,7 @@ CCFLAGS = -g
 INC = inc/
 SRCS = src/main.c src/open.c
 
-all: $(NAME) $(PAYLOAD) $(SAMPLE)
+all: $(NAME) $(PAYLOAD) $(SAMPLE) crypt
 
 $(NAME): $(SRCS)
 	$(CC) $(CCFLAGS) -I $(INC) $(SRCS) -o $@ 
@@ -17,6 +17,9 @@ $(PAYLOAD): payload.s
 
 $(SAMPLE): resources/sample.c Makefile
 	$(CC) -no-pie resources/sample.c -o resources/no-pie-sample64
+
+crypt: src/tea_encrypt.s
+	nasm -f elf64 src/tea_encrypt.s && ld -g src/tea_encrypt.o -o crypt
 
 clean:
 	rm -f $(NAME)

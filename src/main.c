@@ -132,7 +132,8 @@ main(int argc, char **argv)
    Elf64_Addr base = find_virtual_address(target);
 
    /* Copy payload in the segment padding area */   
-   memmove(target + cc_offset, payload + p_text_sec->sh_offset, p_text_sec->sh_size);
+   memmove(target + cc_offset, payload + p_text_sec->sh_offset, 
+                           p_text_sec->sh_size);
    t_load_seg->p_filesz += p_text_sec->sh_size;
    t_load_seg->p_memsz += p_text_sec->sh_size;
 

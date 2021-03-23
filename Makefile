@@ -7,19 +7,24 @@ CCFLAGS = -g
 INC = inc/
 SRCS = src/main.c src/open.c
 
-all: $(NAME) $(PAYLOAD) $(SAMPLE) crypt
+all: $(NAME) $(PAYLOAD) $(SAMPLE) encrypter
 
 $(NAME): $(SRCS)
 	$(CC) $(CCFLAGS) -I $(INC) $(SRCS) -o $@ 
 
-$(PAYLOAD): payload.s
-	nasm -f elf64 -o payload.o payload.s && ld -o payload payload.o
+$(PAYLOAD): src/payload.s
+	nasm -g -f elf64 -o src/payload.o src/payload.s && ld -g -o payload src/payload.o
 
 $(SAMPLE): resources/sample.c Makefile
 	$(CC) -no-pie resources/sample.c -o resources/no-pie-sample64
 
-crypt: src/tea_encrypt.s
-	nasm -f elf64 src/tea_encrypt.s && ld -g src/tea_encrypt.o -o crypt
+encrypter: src/encrypt.c src/tea_encrypter.s
+	nasm -f elf64 src/tea_encrypter.s
+	gcc -g -no-pie -I inc/ src/encrypt.c src/tea_encrypter.o -o encrypter
+
+decrypter: src/encrypt.c src/tea_decrypter.s
+	nasm -f elf64 src/tea_decrypter.s
+	gcc -g -no-pie -I inc/ src/encrypt.c src/tea_decrypter.o -o decrypter
 
 clean:
 	rm -f $(NAME)

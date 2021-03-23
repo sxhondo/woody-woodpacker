@@ -17,5 +17,7 @@ int
 open_duplicate_and_map(char *fname, void **data, int *fsize);
 int
 open_and_map(char *fname, void **data, int *fsize);
+int 
+get_file_size(int fd);
 
 # endif

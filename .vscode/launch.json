@@ -8,7 +8,7 @@
          "name": "(gdb) ./crypt",
          "type": "cppdbg",
          "request": "launch",
-         "program": "./crypt",
+         "program": "${workspaceFolder}/decrypter",
          "args": [],
          "stopAtEntry": false,
          "cwd": "${workspaceFolder}",

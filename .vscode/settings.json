@@ -1,6 +1,8 @@
 {
    "files.associations": {
       "woodpacker.h": "c",
-      "woody-woodpacker.h": "c"
+      "woody-woodpacker.h": "c",
+      "fcntl.h": "c",
+      "stat.h": "c"
    }
 }

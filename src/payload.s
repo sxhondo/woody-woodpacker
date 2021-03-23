@@ -1,11 +1,13 @@
-section .text
-        global _start
+section   .text
+  global  _start
 
 _start:
   push rax
   push rdi
   push rsi
   push rdx
+
+  mov eax, [msg]
 
   mov rax, 1
   mov rdi, 1

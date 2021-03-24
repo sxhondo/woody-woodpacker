@@ -4,10 +4,9 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <stdlib.h>
+#include <elf.h>
+#include <string.h>
 
-// extern void tea_encrypt(void *msg, const uint32_t key[4], int fsize);
-
-extern void tea_decrypt(void *msg, const uint32_t key[4], int fsize);
 
 int 
 get_file_size(int fd)
@@ -46,13 +45,45 @@ static void decrypt(uint32_t* msg, uint32_t *key) {
     msg[1] = msg1;
 }
 
-int main()
+// extern void tea_encrypt(void *msg, const uint32_t key[4], int fsize);
+
+extern void tea_decrypt(void *msg, const uint32_t key[4], int fsize);
+
+Elf64_Shdr *
+find_section(void *data, char *name)
+{
+   Elf64_Ehdr *elf_hdr = (Elf64_Ehdr *)data;
+   Elf64_Shdr *shdr = (Elf64_Shdr *)(data + elf_hdr->e_shoff);
+   Elf64_Shdr *sh_strtab = &shdr[elf_hdr->e_shstrndx];
+   const char *const sh_strtab_p = data + sh_strtab->sh_offset;
+
+   printf("+ %d section in file. Looking for section '%s'\n",
+      elf_hdr->e_shnum, name);
+
+   for (int i = 0; i < elf_hdr->e_shnum; i++)
+   {
+      char *sname = (char *) (sh_strtab_p + shdr[i].sh_name);
+      if (!strcmp(sname, name)) return &shdr[i];
+   }
+   printf("- Could not find '%s'\n", name);
+   return NULL;
+}
+
+int main(int ac, char **av)
 {
 	uint32_t key[] = {0x0, 0x0, 0x0, 0x0};
 
-   int fd = open("resources/data", O_RDWR, 0777);
+   if (ac != 2)
+   {
+      printf("./decrypter file");
+      exit(1);
+   }
+
+   int fd = open("resources/xsample64", O_RDWR, 0777);
    int fsize = get_file_size(fd);
    void *data = mmap(0, fsize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+
+   Elf64_Shdr *section = find_section(data, ".comment");
 
    printf("+ File address %p (%d bytes)\n", data, fsize);
    printf("+ Key address %p\n", key);
@@ -61,7 +92,7 @@ int main()
 
    // tea_encrypt(data, key, nsize);
 
-   tea_decrypt(data, key, nsize);
+   tea_decrypt(data + section->sh_offset, key, section->sh_size / sizeof(void *));
 
    // for (int i = 0; i < nsize; i++)
    //    encrypt(data + (i * 8), key);

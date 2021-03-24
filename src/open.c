@@ -65,7 +65,7 @@ open_duplicate_and_map(char *fname, void **data, int *fsize)
    close(srcfd);
 
    /* map copy */
-   if ((*data = mmap(0, *fsize, PROT_WRITE, MAP_SHARED, 
+   if ((*data = mmap(0, *fsize, PROT_READ | PROT_WRITE, MAP_SHARED, 
          dstfd, 0)) == MAP_FAILED)
    {
       perror("mmap() ");

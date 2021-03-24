@@ -1,6 +1,3 @@
-section  .data
-   k dd 0x0, 0x0, 0x0, 0x0
-
 section   .text
    global  tea_decrypt
 
@@ -10,6 +7,15 @@ tea_decrypt:
    push rsi
    push rdx
 
+   mov eax, [rsi],
+   mov [k], eax
+   mov eax, [rsi + 4]
+   mov [k + 4], eax
+   mov eax, [rsi + 8]
+   mov [k + 8], eax
+   mov eax, [rsi + 12]
+   mov [k + 12], eax          ; while in c
+   
    mov r11d, edx              ; r11d for fsize
 
    mov ecx, 0
@@ -73,3 +79,6 @@ done:
    pop rsi
    pop rdi
    pop rax
+
+section .data
+   k dd 0xAABBCCDD, 0xBBCCDDAA, 0xCCDDFFEE, 0xEEFFDDCC

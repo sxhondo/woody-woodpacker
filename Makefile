@@ -10,7 +10,9 @@ SRCS = src/main.c src/open.c
 all: $(NAME) $(PAYLOAD) $(SAMPLE) encrypter
 
 $(NAME): $(SRCS)
-	$(CC) $(CCFLAGS) -I $(INC) $(SRCS) -o $@ 
+	nasm -f elf64 src/tea_encrypter.s -o src/tea_encrypter.o
+	nasm -f elf64 src/tea_decrypter.s -o src/tea_decrypter.o
+	$(CC) $(CCFLAGS) -no-pie -I $(INC) $(SRCS) src/tea_encrypter.o src/tea_decrypter.o -o $@ 
 
 $(PAYLOAD): src/payload.s
 	nasm -g -f elf64 -o src/payload.o src/payload.s && ld -g -o payload src/payload.o

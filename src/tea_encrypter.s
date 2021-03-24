@@ -12,6 +12,8 @@ tea_encrypt:
   push rax
   push rbx
   push rcx
+  push rdx
+  push rdi
 
   mov [fsize], rdx                ; save file size
 
@@ -98,4 +100,6 @@ done:
   pop rax
   pop rbx
   pop rcx
+  pop rdx
+  pop rdi
   ret

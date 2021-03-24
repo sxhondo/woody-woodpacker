@@ -35,12 +35,12 @@
          "cwd": "${workspaceFolder}"
       },
       {
-         "name": "(gdb) Launch",
+         "name": "(gdb) ./injector",
          "type": "cppdbg",
          "request": "launch",
          "program": "${workspaceFolder}/injector",
          "args": [
-            "resources/sample64",
+            "resources/no-pie-sample64",
             "payload"
          ],
          "stopAtEntry": false,

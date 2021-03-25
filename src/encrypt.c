@@ -1,87 +1,93 @@
 #include "woody-woodpacker.h"
 
-static void encrypt(uint32_t* msg, uint32_t *key)
+static void
+insert_key(void *target, int size, uint32_t key[4])
 {
-  uint32_t msg0 = msg[0], msg1 = msg[1], sum = 0;
-  uint32_t delta = 0x9e3779b9;
+   uint32_t    ph0 = 0x75726976;
+   uint32_t    ph1 = 0x73796273;
+   uint32_t    ph2 = 0x6e6f6878;
+   uint32_t    ph3 = 0x293a6f64;
 
-   for (int i = 0; i < 32; i++) 
+   for (int i = 0; i < size; i++)
    {
-     sum += delta;
-     msg0 += ((msg1 << 4) + key[0]) ^ (msg1 + sum) ^ ((msg1 >> 5) + key[1]);
-     msg1 += ((msg0 << 4) + key[2]) ^ (msg0 + sum) ^ ((msg0 >> 5) + key[3]);
+      uint32_t sub = *(uint32_t *)(target + i);
+      if (sub == ph0)
+      {
+         *(uint32_t *)(target + i) = key[0];
+         printf("   *Found placeholder (%#x). Replaced with (%x)\n", ph0, key[0]);
+      }
+      else if (sub == ph1)
+      {
+         *(uint32_t *)(target + i) = key[1];
+         printf("   *Found placeholder (%#x). Replaced with (%x)\n", ph1, key[1]);
+      }
+      else if (sub == ph2)
+      {
+         *(uint32_t *)(target + i) = key[2];
+         printf("   *Found placeholder (%#x). Replaced with (%x)\n", ph2, key[2]);
+      }
+      else if (sub == ph3)
+      {
+         *(uint32_t *)(target + i) = key[3];
+         printf("   *Found placeholder (%#x). Replaced with (%x)\n", ph3, key[3]);
+      }
    }
-   msg[0] = msg0; 
-   msg[1] = msg1;
-}       
-
-static void decrypt(uint32_t* msg, uint32_t *key) {
-    uint32_t msg0 = msg[0], msg1 = msg[1], sum = 0xC6EF3720; 
-    uint32_t delta = 0x9e3779b9;
-
-    for (int i = 0; i < 32; i++) 
-    {
-        msg1 -= ((msg0 << 4) + key[2]) ^ (msg0 + sum) ^ ((msg0 >> 5) + key[3]);      
-        msg0 -= ((msg1 << 4) + key[0]) ^ (msg1 + sum) ^ ((msg1 >> 5) + key[1]);
-        sum -= delta;
-    }
-    msg[0] = msg0; 
-    msg[1] = msg1;
 }
 
-// extern void tea_encrypt(void *msg, const uint32_t key[4], int fsize);
-
-extern void tea_decrypt(void *msg, const uint32_t key[4], int fsize);
-
-Elf64_Shdr *
-find_section(void *data, char *name)
+static void
+insert_file_size(void *target, int size, uint32_t file_size)
 {
-   Elf64_Ehdr *elf_hdr = (Elf64_Ehdr *)data;
-   Elf64_Shdr *shdr = (Elf64_Shdr *)(data + elf_hdr->e_shoff);
-   Elf64_Shdr *sh_strtab = &shdr[elf_hdr->e_shstrndx];
-   const char *const sh_strtab_p = data + sh_strtab->sh_offset;
+   uint32_t    ph = 0x2A2A2A2A;
 
-   printf("+ %d section in file. Looking for section '%s'\n",
-      elf_hdr->e_shnum, name);
-
-   for (int i = 0; i < elf_hdr->e_shnum; i++)
+   printf("+ Inserting file size: (%d)\n", file_size);
+   for (int i = 0; i < size; i++)
    {
-      char *sname = (char *) (sh_strtab_p + shdr[i].sh_name);
-      if (!strcmp(sname, name)) return &shdr[i];
+      uint32_t sub = *(uint32_t *)(target + i);
+      if (sub == ph)
+      {
+         *(uint32_t *)(target + i) = file_size;
+         printf("   *Found placeholder (%#x). Replaced with (%d)\n", ph, file_size);
+         return ;
+      }
    }
-   printf("- Could not find '%s'\n", name);
-   return NULL;
+   printf("- Placeholder not found\n");
 }
- //0x401297
-int main(int ac, char **av)
+
+static void
+insert_start_addr(void *target, int size, unsigned long ptr)
 {
-	uint32_t key[] = {0x0, 0x0, 0x0, 0x0};
+   uint32_t    ph = 0x15151515;
 
-   if (ac != 2)
+   printf("+ Inserting address: (%#lx)\n", ptr);
+   for (int i = 0; i < size; i++)
    {
-      printf("./decrypter file");
-      exit(1);
+      unsigned long substr = *(unsigned long *)(target + i);
+      if (substr == ph)
+      {
+         *(unsigned long *)(target + i) = ptr;
+         printf("   *Found placeholder (%#x). Replaced with (%#lx)\n", ph, ptr);
+         return ;
+      }
    }
+   printf("- Placeholder not found\n");
+}
 
-   int fd = open("resources/xsample64", O_RDWR, 0777);
-   int fsize = get_file_size(fd);
-   void *data = mmap(0, fsize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+extern void tea_encrypt(void *msg, const uint32_t key[4], int fsize);
 
-   Elf64_Shdr *section = find_section(data, ".comment");
+void  encrypt(void *target, int padoff, uint32_t key[4], Elf64_Addr base)
+{
+   Elf64_Shdr *txt_sec = find_section(target, ".text");
 
-   printf("+ File address %p (%d bytes)\n", data, fsize);
-   printf("+ Key address %p\n", key);
+   printf("+ Section offset at %lx (%ld bytes) (%ld)\n",
+      txt_sec->sh_offset, txt_sec->sh_size, txt_sec->sh_size / sizeof(void *));
+   tea_encrypt(target + txt_sec->sh_offset, key, txt_sec->sh_size / sizeof(void *));
+   
+   insert_key(target + padoff, txt_sec->sh_size, key);
+   insert_file_size(target + padoff, txt_sec->sh_size, txt_sec->sh_size / sizeof(void *));
+   insert_start_addr(target + padoff, txt_sec->sh_size, txt_sec->sh_offset + base);
 
-   int nsize = fsize / sizeof(void *);
-
-   // tea_encrypt(data, key, nsize);
-
-   tea_decrypt(data + section->sh_offset, key, section->sh_size / sizeof(void *));
-
-   // for (int i = 0; i < nsize; i++)
-   //    encrypt(data + (i * 8), key);
-
-   // for (int i = 0; i < nsize; i++)
-   //    decrypt(data + (i * 8), key);
-   return 0;
+   txt_sec = find_section(target, ".comment");
+   printf("+ Section offset at %lx (%ld bytes) (%ld)\n", 
+      txt_sec->sh_offset, txt_sec->sh_size, txt_sec->sh_size / sizeof(void *));
+   tea_encrypt(target + txt_sec->sh_offset, key, txt_sec->sh_size / sizeof(void *));
 }

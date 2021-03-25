@@ -23,13 +23,9 @@ int   get_file_size(int fd);
 
 /* inject.c */
 void  inject_payload(void *target, void *payload, int tsize, int psize);
+Elf64_Shdr *find_section(void *data, char *name);
 
-
-/* insert.c */
-void  insert_key(void *target, int size, uint32_t key[4]);
-void  insert_file_size(void *target, int size, uint32_t file_size);
-void  insert_start_addr(void *target, int size, unsigned long ptr);
-void  insert_jmp_to_ep(void *target, int ssize, long oep);
-
+/* encrypt.c */
+void  encrypt(void *target, int cc_offset, uint32_t key[4], Elf64_Addr base);
 
 # endif

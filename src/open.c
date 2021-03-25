@@ -1,13 +1,15 @@
 #include "woody-woodpacker.h"
 
-int   get_file_size(int fd)
+int
+get_file_size(int fd)
 {
    struct stat stat;
    fstat(fd, &stat);
    return stat.st_size;
 }
 
-static int safe_open(char *fname, unsigned int flags, unsigned int mod)
+static int
+safe_open(char *fname, unsigned int flags, unsigned int mod)
 {
    int fd = open(fname, flags, mod);
 
@@ -19,7 +21,8 @@ static int safe_open(char *fname, unsigned int flags, unsigned int mod)
    return fd;
 }
 
-static void *safe_mmap(int len, int prot, int flags, int fd)
+static void
+*safe_mmap(int len, int prot, int flags, int fd)
 {
    void *data = mmap(0, len, prot, flags, fd, 0);
 
@@ -31,7 +34,8 @@ static void *safe_mmap(int len, int prot, int flags, int fd)
    return data;
 }
 
-int      map_payload(char *fname, void **data, int *fsize)
+int
+map_payload(char *fname, void **data, int *fsize)
 {
    int   fd = safe_open(fname, O_RDONLY, 0);
    
@@ -40,7 +44,8 @@ int      map_payload(char *fname, void **data, int *fsize)
    return fd;
 }
 
-int      map_target(char *fname, void **data, int *fsize)
+int
+map_target(char *fname, void **data, int *fsize)
 {
    void  *data_src;
    int   srcfd, dstfd, size;

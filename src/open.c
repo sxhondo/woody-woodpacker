@@ -1,76 +1,65 @@
 #include "woody-woodpacker.h"
 
-int 
-get_file_size(int fd)
+int   get_file_size(int fd)
 {
    struct stat stat;
    fstat(fd, &stat);
    return stat.st_size;
 }
 
-int
-open_and_map(char *fname, void **data, int *fsize)
+static int safe_open(char *fname, unsigned int flags, unsigned int mod)
 {
-   int   srcfd, size;
+   int fd = open(fname, flags, mod);
 
-   if ((srcfd = open(fname, O_RDONLY)) < 0)
+   if (fd < 0)
    {
-      perror("open() ");
+      fprintf(stderr, "open() fails\n");
       exit(1);
    }
-   *fsize = get_file_size(srcfd);
-   if ((*data = mmap(0, *fsize, PROT_READ, MAP_SHARED, 
-         srcfd, 0)) == MAP_FAILED)
-   {
-      perror("mmap() ");
-      exit(1);
-   }
-   return srcfd;
+   return fd;
 }
 
-int
-open_duplicate_and_map(char *fname, void **data, int *fsize)
+static void *safe_mmap(int len, int prot, int flags, int fd)
 {
-   void  *mem;
+   void *data = mmap(0, len, prot, flags, fd, 0);
+
+   if (data == MAP_FAILED)
+   {
+      fprintf(stderr, "mmap() fails\n");
+      exit(1);
+   }
+   return data;
+}
+
+int      map_payload(char *fname, void **data, int *fsize)
+{
+   int   fd = safe_open(fname, O_RDONLY, 0);
+   
+   *fsize = get_file_size(fd);
+   *data = safe_mmap(*fsize, PROT_READ, MAP_SHARED, fd);
+   return fd;
+}
+
+int      map_target(char *fname, void **data, int *fsize)
+{
+   void  *data_src;
    int   srcfd, dstfd, size;
 
-   /* open original file */
-   if ((srcfd = open(fname, O_RDONLY)) < 0)
-   {
-      perror("open() ");
-      exit(1);
-   }
+   srcfd = safe_open(fname, O_RDONLY, 0);
    *fsize = get_file_size(srcfd);
-   if ((mem = mmap(0, *fsize, PROT_READ, MAP_SHARED, 
-         srcfd, 0)) == MAP_FAILED)
-   {
-      perror("mmap() ");
-      exit(1);
-   }
-   printf("+ %s mapped (%d bytes) at %p\n", fname, *fsize, mem);
-   /* make copy */
-   char  *dst = "resources/xsample64";
-   if ((dstfd = open(dst, O_RDWR | O_CREAT | O_TRUNC, 0777)) < 0)
-   {
-      perror("open() ");
-      exit(1);
-   }
-   write(dstfd, mem, *fsize);
+   data_src = safe_mmap(*fsize, PROT_READ, MAP_SHARED, srcfd);
+   printf("+ %s mapped (%d bytes) at %p\n", fname, *fsize, data_src);
+   
+   dstfd = safe_open(OUTPUT_NAME, O_RDWR | O_CREAT | O_TRUNC, 0777);
+   write(dstfd, data_src, *fsize);
    if (*fsize != get_file_size(dstfd))
-   {
-      perror("sizes of src and dst differs");
-      exit(1);
+   { 
+      fprintf(stderr, "failed to create copy\n"); 
+      exit(1); 
    }
-   munmap(mem, size);
+   *data = safe_mmap(*fsize, PROT_READ | PROT_WRITE, MAP_SHARED, dstfd);
+   printf("+ %s mapped (%d bytes) at %p\n", OUTPUT_NAME, *fsize, data);
+   munmap(data_src, size);
    close(srcfd);
-
-   /* map copy */
-   if ((*data = mmap(0, *fsize, PROT_READ | PROT_WRITE, MAP_SHARED, 
-         dstfd, 0)) == MAP_FAILED)
-   {
-      perror("mmap() ");
-      exit(1);
-   }
-   printf("+ %s mapped (%d bytes) at %p\n", dst, *fsize, data);
    return dstfd;
 }

@@ -1,20 +1,4 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <stdlib.h>
-#include <elf.h>
-#include <string.h>
-
-
-int 
-get_file_size(int fd)
-{
-   struct stat stat;
-   fstat(fd, &stat);
-   return stat.st_size;
-}
+#include "woody-woodpacker.h"
 
 static void encrypt(uint32_t* msg, uint32_t *key)
 {
@@ -68,7 +52,7 @@ find_section(void *data, char *name)
    printf("- Could not find '%s'\n", name);
    return NULL;
 }
-
+ //0x401297
 int main(int ac, char **av)
 {
 	uint32_t key[] = {0x0, 0x0, 0x0, 0x0};

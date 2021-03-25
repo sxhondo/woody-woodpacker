@@ -1,60 +1,194 @@
-  403f7b:	00 00                	add    %al,(%rax)
-  403f7d:	00 00                	add    %al,(%rax)
-  403f7f:	00 f0                	add    %dh,%al
-  403f81:	ff                   	(bad)  
-  403f82:	ff 6f 00             	ljmp   *0x0(%rdi)
-  403f85:	00 00                	add    %al,(%rax)
-  403f87:	00 5e 04             	add    %bl,0x4(%rsi)
-  403f8a:	40 00 00             	add    %al,(%rax)
-	...
 
-Disassembly of section .got:
+resources/xsample64:     file format elf64-x86-64
 
-0000000000403ff0 <.got>:
-	...
 
-Disassembly of section .got.plt:
+Disassembly of section .text:
 
-0000000000404000 <_GLOBAL_OFFSET_TABLE_>:
-  404000:	20 3e                	and    %bh,(%rsi)
-  404002:	40 00 00             	add    %al,(%rax)
-	...
-  404015:	00 00                	add    %al,(%rax)
-  404017:	00 30                	add    %dh,(%rax)
-  404019:	10 40 00             	adc    %al,0x0(%rax)
-  40401c:	00 00                	add    %al,(%rax)
-	...
+0000000000401050 <_start>:
+  401050:	db 5e b9             	fistpl -0x47(%rsi)
+  401053:	e8 ca 9d bf 3f       	callq  3fffae22 <_end+0x3fbf6dea>
+  401058:	6c                   	insb   (%dx),%es:(%rdi)
+  401059:	7b b1                	jnp    40100c <_init+0xc>
+  40105b:	2c c8                	sub    $0xc8,%al
+  40105d:	77 a3                	ja     401002 <_init+0x2>
+  40105f:	95                   	xchg   %eax,%ebp
+  401060:	04 10                	add    $0x10,%al
+  401062:	4f                   	rex.WRXB
+  401063:	4a 55                	rex.WX push %rbp
+  401065:	29 42 76             	sub    %eax,0x76(%rdx)
+  401068:	5c                   	pop    %rsp
+  401069:	cc                   	int3   
+  40106a:	e1 9d                	loope  401009 <_init+0x9>
+  40106c:	f5                   	cmc    
+  40106d:	6e                   	outsb  %ds:(%rsi),(%dx)
+  40106e:	dc f7                	fdiv   %st,%st(7)
+  401070:	7d ba                	jge    40102c <.plt+0xc>
+  401072:	e7 14                	out    %eax,$0x14
+  401074:	1a 1b                	sbb    (%rbx),%bl
+  401076:	8f                   	(bad)  
+  401077:	2c de                	sub    $0xde,%al
+  401079:	f8                   	clc    
+  40107a:	88 2b                	mov    %ch,(%rbx)
+  40107c:	e5 03                	in     $0x3,%eax
+  40107e:	32 11                	xor    (%rcx),%dl
 
-Disassembly of section .data:
+0000000000401080 <_dl_relocate_static_pie>:
+  401080:	98                   	cwtl   
+  401081:	a5                   	movsl  %ds:(%rsi),%es:(%rdi)
+  401082:	16                   	(bad)  
+  401083:	68 9c bb 0b 09       	pushq  $0x90bbb9c
+  401088:	86 46 59             	xchg   %al,0x59(%rsi)
+  40108b:	64 66 23 96 16   	and    %fs:-0x724d31ea(%rsi),%dx
+  401092:	 
 
-0000000000404020 <__data_start>:
-	...
+0000000000401090 <deregister_tm_clones>:
+  401090:	ce                   	(bad)  
+  401091:	b2 8d                	mov    $0x8d,%dl
+  401093:	f5                   	cmc    
+  401094:	12 a5 c0 b5 f5 34    	adc    0x34f5b5c0(%rbp),%ah
+  40109a:	5c                   	pop    %rsp
+  40109b:	98                   	cwtl   
+  40109c:	b2 cd                	mov    $0xcd,%dl
+  40109e:	b5 c5                	mov    $0xc5,%ch
+  4010a0:	61                   	(bad)  
+  4010a1:	04 63                	add    $0x63,%al
+  4010a3:	c9                   	leaveq 
+  4010a4:	cc                   	int3   
+  4010a5:	b4 36                	mov    $0x36,%ah
+  4010a7:	43                   	rex.XB
+  4010a8:	43                   	rex.XB
+  4010a9:	4c 7f a7             	rex.WR jg 401053 <_start+0x3>
+  4010ac:	07                   	(bad)  
+  4010ad:	c9                   	leaveq 
+  4010ae:	5e                   	pop    %rsi
+  4010af:	43 5a                	rex.XB pop %r10
+  4010b1:	ce                   	(bad)  
+  4010b2:	de 08                	fimuls (%rax)
+  4010b4:	0e                   	(bad)  
+  4010b5:	d6                   	(bad)  
+  4010b6:	48 8b 91 08 0b 0c 43 	mov    0x430c0b08(%rcx),%rdx
+  4010bd:	e3 ce                	jrcxz  40108d <_dl_relocate_static_pie+0xd>
+  4010bf:	dc       	fdivl  0x7f271224(%rbx,%rdx,1)
 
-0000000000404028 <__dso_handle>:
-	...
+00000000004010c0 <register_tm_clones>:
+  4010c0:	b4 13                	mov    $0x13,%ah
+  4010c2:	24 12                	and    $0x12,%al
+  4010c4:	27                   	(bad)  
+  4010c5:	7f b9                	jg     401080 <_dl_relocate_static_pie>
+  4010c7:	de e7                	fsubp  %st,%st(7)
+  4010c9:	14 3b                	adc    $0x3b,%al
+  4010cb:	8d 84 9d 70 0c 12 86 	lea    -0x79edf390(%rbp,%rbx,4),%eax
+  4010d2:	06                   	(bad)  
+  4010d3:	a0 a7 18 6b 4e 97 12 	movabs 0x4ece12974e6b18a7,%al
+  4010da:	ce 4e 
+  4010dc:	fa                   	cli    
+  4010dd:	33 dc                	xor    %esp,%ebx
+  4010df:	5e                   	pop    %rsi
+  4010e0:	97                   	xchg   %eax,%edi
+  4010e1:	30 0d 58 ab 5f 6e    	xor    %cl,0x6e5fab58(%rip)        # 6e9fbc3f <_end+0x6e5f7c07>
+  4010e7:	7a 40                	jp     401129 <__do_global_dtors_aux+0x29>
+  4010e9:	24 c4                	and    $0xc4,%al
+  4010eb:	0a d1                	or     %cl,%dl
+  4010ed:	48 7f ad             	rex.W jg 40109d <deregister_tm_clones+0xd>
+  4010f0:	5a                   	pop    %rdx
+  4010f1:	ce                   	(bad)  
+  4010f2:	de 08                	fimuls (%rax)
+  4010f4:	0e                   	(bad)  
+  4010f5:	d6                   	(bad)  
+  4010f6:	48 8b 91 08 0b 0c 43 	mov    0x430c0b08(%rcx),%rdx
+  4010fd:	e3 ce                	jrcxz  4010cd <register_tm_clones+0xd>
+  4010ff:	dc                 	fsub   %st,%st(3)
 
-Disassembly of section .bss:
+0000000000401100 <__do_global_dtors_aux>:
+  401100:	e3 d2                	jrcxz  4010d4 <register_tm_clones+0x14>
+  401102:	bb 2a 3d 4c 9c       	mov    $0x9c4c3d2a,%ebx
+  401107:	5e                   	pop    %rsi
+  401108:	b6 c0                	mov    $0xc0,%dh
+  40110a:	c0 0f 73             	rorb   $0x73,(%rdi)
+  40110d:	26 50                	es push %rax
+  40110f:	38 32                	cmp    %dh,(%rdx)
+  401111:	97                   	xchg   %eax,%edi
+  401112:	2f                   	(bad)  
+  401113:	18 b4 fa 03 b0 d8 72 	sbb    %dh,0x72d8b003(%rdx,%rdi,8)
+  40111a:	08 9f f2 96 44 1c    	or     %bl,0x1c4496f2(%rdi)
+  401120:	5a                   	pop    %rdx
+  401121:	ce                   	(bad)  
+  401122:	de 08                	fimuls (%rax)
+  401124:	0e                   	(bad)  
+  401125:	d6                   	(bad)  
+  401126:	48 8b 91 08 0b 0c 43 	mov    0x430c0b08(%rcx),%rdx
+  40112d:	e3 ce                	jrcxz  4010fd <register_tm_clones+0x3d>
+  40112f:	dc               	fsubrl -0x43(%rbp)
 
-0000000000404030 <completed.8060>:
-	...
+0000000000401130 <frame_dummy>:
+  401130:	6d                   	insl   (%dx),%es:(%rdi)
+  401131:	bd d0 23 82 cb       	mov    $0xcb8223d0,%ebp
 
-Disassembly of section .comment:
+0000000000401136 <main>:
+  401136:	8d 6c fc b4          	lea    -0x4c(%rsp,%rdi,8),%ebp
+  40113a:	80 8d cb 57 3f c9 f3 	orb    $0xf3,-0x36c0a835(%rbp)
+  401141:	dd b7 ec ab f8 43    	fnsave 0x43f8abec(%rdi)
+  401147:	97                   	xchg   %eax,%edi
+  401148:	9a                   	(bad)  
+  401149:	58                   	pop    %rax
+  40114a:	9b                   	fwait
+  40114b:	be ba d4 95 b9       	mov    $0xb995d4ba,%esi
+  401150:	f7 ef                	imul   %edi
+  401152:	2c 99                	sub    $0x99,%al
+  401154:	f0 b3 29             	lock mov $0x29,%bl
+  401157:	eb 4e                	jmp    4011a7 <__libc_csu_init+0x47>
+  401159:	e2 2c                	loop   401187 <__libc_csu_init+0x27>
+  40115b:	30 42 1d             	xor    %al,0x1d(%rdx)
+  40115e:	e2 db                	loop   40113b <main+0x5>
 
-0000000000000000 <.comment>:
-   0:	47                   	rex.RXB
-   1:	43                   	rex.XB
-   2:	43 3a 20             	rex.XB cmp (%r8),%spl
-   5:	28 55 62             	sub    %dl,0x62(%rbp)
-   8:	75 6e                	jne    78 <_init-0x400f88>
-   a:	74 75                	je     81 <_init-0x400f7f>
-   c:	20 39                	and    %bh,(%rcx)
-   e:	2e 33 2e             	xor    %cs:(%rsi),%ebp
-  11:	30 2d 31 37 75 62    	xor    %ch,0x62753731(%rip)        # 62753748 <_end+0x6234f710>
-  17:	75 6e                	jne    87 <_init-0x400f79>
-  19:	74 75                	je     90 <_init-0x400f70>
-  1b:	31 7e 32             	xor    %edi,0x32(%rsi)
-  1e:	30 2e                	xor    %ch,(%rsi)
-  20:	30 34 29             	xor    %dh,(%rcx,%rbp,1)
-  23:	20 39                	and    %bh,(%rcx)
-  25:	2e 33 2e             	xor    %cs:(%rsi),%ebp
-  28:	30 00                	xor    %al,(%rax)
+0000000000401160 <__libc_csu_init>:
+  401160:	78 f2                	js     401154 <main+0x1e>
+  401162:	6c                   	insb   (%dx),%es:(%rdi)
+  401163:	06                   	(bad)  
+  401164:	4c 9a                	rex.WR (bad) 
+  401166:	97                   	xchg   %eax,%edi
+  401167:	52                   	push   %rdx
+  401168:	e7 56                	out    %eax,$0x56
+  40116a:	49 2c d5             	rex.WB sub $0xd5,%al
+  40116d:	23 9a 3e fa 6a 71    	and    0x716afa3e(%rdx),%ebx
+  401173:	84 1b                	test   %bl,(%rbx)
+  401175:	59                   	pop    %rcx
+  401176:	a4                   	movsb  %ds:(%rsi),%es:(%rdi)
+  401177:	8d                   	(bad)  
+  401178:	f5                   	cmc    
+  401179:	78 28                	js     4011a3 <__libc_csu_init+0x43>
+  40117b:	9f                   	lahf   
+  40117c:	76 7a                	jbe    4011f8 <_fini+0x20>
+  40117e:	7b 45                	jnp    4011c5 <__libc_csu_init+0x65>
+  401180:	d1 bd eb f7 f5 a9    	sarl   -0x560a0815(%rbp)
+  401186:	ab                   	stos   %eax,%es:(%rdi)
+  401187:	4b 6c                	rex.WXB insb (%dx),%es:(%rdi)
+  401189:	2a 94 26 d6 ed 8b 56 	sub    0x568bedd6(%rsi,%riz,1),%dl
+  401190:	94                   	xchg   %eax,%esp
+  401191:	83 17 84             	adcl   $0xffffff84,(%rdi)
+  401194:	3c 71                	cmp    $0x71,%al
+  401196:	82                   	(bad)  
+  401197:	07                   	(bad)  
+  401198:	bf 75 46 47 72       	mov    $0x72474675,%edi
+  40119d:	f9                   	stc    
+  40119e:	31 07                	xor    %eax,(%rdi)
+  4011a0:	0e                   	(bad)  
+  4011a1:	e8 b4 d6 10 5a       	callq  5a50e85a <_end+0x5a10a822>
+  4011a6:	f9                   	stc    
+  4011a7:	70 c2                	jo     40116b <__libc_csu_init+0xb>
+  4011a9:	3f                   	(bad)  
+  4011aa:	ad                   	lods   %ds:(%rsi),%eax
+  4011ab:	2a 7c 8b 1e          	sub    0x1e(%rbx,%rcx,4),%bh
+  4011af:	16                   	(bad)  
+  4011b0:	9c                   	pushfq 
+  4011b1:	81 83 4d 45 b2 1d 76 	addl   $0x7312b76,0x1db2454d(%rbx)
+  4011b8:	2b 31 07 
+  4011bb:	a2 0a 58 7f 84 e0 4f 	movabs %al,0x28ed4fe0847f580a
+  4011c2:	ed 28 
+  4011c4:	3b d6                	cmp    %esi,%edx
+  4011c6:	4d bc 91 ac bb 7d 4c 	rex.WRB movabs $0xfb235a4c7dbbac91,%r12
+  4011cd:	5a 23 fb 
+
+00000000004011d0 <__libc_csu_fini>:
+  4011d0:	f3 0f 1e fa          	endbr64 
+  4011d4:	c3                   	retq   

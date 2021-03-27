@@ -1,4 +1,0 @@
-readelf --hex-dump=.text sample64
-
-0000020  22ec 0000 0000 0000 0034 0020 0008 0028
-offset   8 individual 16-bit values

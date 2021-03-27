@@ -24,23 +24,12 @@
          ]
       },
       {
-         "type": "lldb",
-         "request": "launch",
-         "name": "(lldb) Launch",
-         "program": "${workspaceFolder}/injector",
-         "args": [
-            "resources/pie-sample64",
-            "payload"
-         ],
-         "cwd": "${workspaceFolder}"
-      },
-      {
          "name": "(gdb) ./injector",
          "type": "cppdbg",
          "request": "launch",
          "program": "${workspaceFolder}/injector",
          "args": [
-            "resources/no-pie-sample64",
+            "resources/9.3-no-pie-sample64",
             "payload"
          ],
          "stopAtEntry": false,
@@ -55,6 +44,17 @@
                "ignoreFailures": true
             }
          ]
+      },
+      {
+         "type": "lldb",
+         "request": "launch",
+         "name": "(lldb) Launch",
+         "program": "${workspaceFolder}/injector",
+         "args": [
+            "resources/4.7-pwd",
+            "payload"
+         ],
+         "cwd": "${workspaceFolder}"
       }
    ]
 }

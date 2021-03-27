@@ -53,7 +53,8 @@ map_target(char *fname, void **data, int *fsize)
    srcfd = safe_open(fname, O_RDONLY, 0);
    *fsize = get_file_size(srcfd);
    data_src = safe_mmap(*fsize, PROT_READ, MAP_SHARED, srcfd);
-   printf("+ %s mapped (%d bytes) at %p\n", fname, *fsize, data_src);
+   
+   if (DEBUG) printf("+ %s mapped (%d bytes) at %p\n", fname, *fsize, data_src);
    
    dstfd = safe_open(OUTPUT_NAME, O_RDWR | O_CREAT | O_TRUNC, 0777);
    write(dstfd, data_src, *fsize);
@@ -63,8 +64,8 @@ map_target(char *fname, void **data, int *fsize)
       exit(1); 
    }
    *data = safe_mmap(*fsize, PROT_READ | PROT_WRITE, MAP_SHARED, dstfd);
-   printf("+ %s mapped (%d bytes) at %p\n", OUTPUT_NAME, *fsize, data);
-   munmap(data_src, size);
+   if (DEBUG) printf("+ %s mapped (%d bytes) at %p\n", OUTPUT_NAME, *fsize, data);
+   munmap(data_src, *fsize);
    close(srcfd);
    return dstfd;
 }

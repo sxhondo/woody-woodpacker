@@ -13,6 +13,7 @@ tea_encrypt:
   push rbx
   push rcx
   push rdx
+  push rsi
   push rdi
 
   mov [fsize], rdx                ; save file size
@@ -97,9 +98,10 @@ write_to_file:
   jmp iter_data
 
 done:
-  pop rax
-  pop rbx
-  pop rcx
-  pop rdx
   pop rdi
+  pop rsi
+  pop rdx
+  pop rcx
+  pop rbx
+  pop rax
   ret

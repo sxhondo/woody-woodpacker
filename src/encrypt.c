@@ -14,22 +14,22 @@ insert_key(void *target, int size, uint32_t key[4])
       if (sub == ph0)
       {
          *(uint32_t *)(target + i) = key[0];
-         printf("   *Found placeholder (%#x). Replaced with (%x)\n", ph0, key[0]);
+         if (DEBUG) printf("   *Found placeholder (%#x). Replaced with (%x)\n", ph0, key[0]);
       }
       else if (sub == ph1)
       {
          *(uint32_t *)(target + i) = key[1];
-         printf("   *Found placeholder (%#x). Replaced with (%x)\n", ph1, key[1]);
+         if (DEBUG) printf("   *Found placeholder (%#x). Replaced with (%x)\n", ph1, key[1]);
       }
       else if (sub == ph2)
       {
          *(uint32_t *)(target + i) = key[2];
-         printf("   *Found placeholder (%#x). Replaced with (%x)\n", ph2, key[2]);
+         if (DEBUG) printf("   *Found placeholder (%#x). Replaced with (%x)\n", ph2, key[2]);
       }
       else if (sub == ph3)
       {
          *(uint32_t *)(target + i) = key[3];
-         printf("   *Found placeholder (%#x). Replaced with (%x)\n", ph3, key[3]);
+         if (DEBUG) printf("   *Found placeholder (%#x). Replaced with (%x)\n", ph3, key[3]);
       }
    }
 }
@@ -39,18 +39,19 @@ insert_file_size(void *target, int size, uint32_t file_size)
 {
    uint32_t    ph = 0x2A2A2A2A;
 
-   printf("+ Inserting file size: (%d)\n", file_size);
+   if (DEBUG) printf("+ Inserting file size: (%d)\n", file_size);
    for (int i = 0; i < size; i++)
    {
       uint32_t sub = *(uint32_t *)(target + i);
       if (sub == ph)
       {
          *(uint32_t *)(target + i) = file_size;
-         printf("   *Found placeholder (%#x). Replaced with (%d)\n", ph, file_size);
+         if (DEBUG) printf("   *Found placeholder (%#x). Replaced with (%d)\n", ph, file_size);
          return ;
       }
    }
-   printf("- Placeholder not found\n");
+   fprintf(stderr, "- Placeholder not found (%#x)\n", ph);
+   exit(1);
 }
 
 static void
@@ -58,36 +59,56 @@ insert_start_addr(void *target, int size, unsigned long ptr)
 {
    uint32_t    ph = 0x15151515;
 
-   printf("+ Inserting address: (%#lx)\n", ptr);
+   if (DEBUG) printf("+ Inserting address: (%#lx)\n", ptr);
    for (int i = 0; i < size; i++)
    {
       unsigned long substr = *(unsigned long *)(target + i);
       if (substr == ph)
       {
          *(unsigned long *)(target + i) = ptr;
-         printf("   *Found placeholder (%#x). Replaced with (%#lx)\n", ph, ptr);
+         if (DEBUG) printf("   *Found placeholder (%#x). Replaced with (%#lx)\n", ph, ptr);
          return ;
       }
    }
-   printf("- Placeholder not found\n");
+   fprintf(stderr, "- Placeholder not found\n");
+   exit(1);
 }
 
 extern void tea_encrypt(void *msg, const uint32_t key[4], int fsize);
 
-void  encrypt(void *target, int padoff, uint32_t key[4], Elf64_Addr base)
+static uint32_t*
+generate_key()
 {
-   Elf64_Shdr *txt_sec = find_section(target, ".text");
+   static uint32_t key[4];
 
-   printf("+ Section offset at %lx (%ld bytes) (%ld)\n",
-      txt_sec->sh_offset, txt_sec->sh_size, txt_sec->sh_size / sizeof(void *));
-   tea_encrypt(target + txt_sec->sh_offset, key, txt_sec->sh_size / sizeof(void *));
+   srand(time(NULL));
+   key[0] = rand();
+   key[1] = rand();
+   key[2] = rand();
+   key[3] = rand();
+
+   printf("key: 0x");
+   for (int i = 0; i < 3; i++) printf("%x", key[i]);
+   printf("\n");
+   return key;
+}
+
+void
+encrypt(void *target, int padoff, Elf64_Addr base)
+{
+   uint32_t    *key = generate_key();
+   Elf64_Shdr  *sec = find_section(target, ".text");
+
+   if (DEBUG) printf("+ Section offset at %lx (%ld bytes) (%ld)\n",
+      sec->sh_offset, sec->sh_size, sec->sh_size / sizeof(void *));
+   tea_encrypt(target + sec->sh_offset, key, sec->sh_size / sizeof(void *));
    
-   insert_key(target + padoff, txt_sec->sh_size, key);
-   insert_file_size(target + padoff, txt_sec->sh_size, txt_sec->sh_size / sizeof(void *));
-   insert_start_addr(target + padoff, txt_sec->sh_size, txt_sec->sh_offset + base);
+   insert_key(target + padoff, sec->sh_size, key);
+   insert_file_size(target + padoff, sec->sh_size, sec->sh_size / sizeof(void *));
+   insert_start_addr(target + padoff, sec->sh_size, sec->sh_offset + base);
 
-   txt_sec = find_section(target, ".comment");
-   printf("+ Section offset at %lx (%ld bytes) (%ld)\n", 
-      txt_sec->sh_offset, txt_sec->sh_size, txt_sec->sh_size / sizeof(void *));
-   tea_encrypt(target + txt_sec->sh_offset, key, txt_sec->sh_size / sizeof(void *));
+   sec = find_section(target, ".comment");
+   if (DEBUG) printf("+ Section offset at %lx (%ld bytes) (%ld)\n", 
+      sec->sh_offset, sec->sh_size, sec->sh_size / sizeof(void *));
+   tea_encrypt(target + sec->sh_offset, key, sec->sh_size / sizeof(void *));
 }

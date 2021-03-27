@@ -8,15 +8,14 @@ find_section(void *data, char *name)
    Elf64_Shdr *sh_strtab = &shdr[elf_hdr->e_shstrndx];
    const char *const sh_strtab_p = data + sh_strtab->sh_offset;
 
-   printf("+ %d section in file. Looking for section '%s'\n",
-      elf_hdr->e_shnum, name);
+   if (DEBUG) printf("+ Looking for section '%s'\n", name);
 
    for (int i = 0; i < elf_hdr->e_shnum; i++)
    {
       char *sname = (char *)(sh_strtab_p + shdr[i].sh_name);
       if (!strcmp(sname, name)) return &shdr[i];
    }
-   fprintf(stderr, "- Could not find '%s'\n", name);
+   fprintf(stderr, "- Could not find section'%s'\n", name);
    exit(1);
 }
 
@@ -33,7 +32,7 @@ find_virtual_address(void *data)
    {
       if (curr_seg->p_type == PT_LOAD)
       {
-         printf("+ Base address (p_vaddr) is %p\n", (void *)curr_seg->p_vaddr);
+         if (DEBUG) printf("+ Base address (p_vaddr) is %p\n", (void *)curr_seg->p_vaddr);
          return curr_seg->p_vaddr;
       }
       curr_seg = (Elf64_Phdr *) ((unsigned char *)curr_seg 
@@ -57,7 +56,7 @@ find_padding_area(void *data, int *padoff, int psize)
       if (curr_seg->p_type == PT_LOAD && curr_seg->p_flags & PF_X)
       {
          curr_seg->p_flags |= PF_W;
-         printf("   * Found executable LOAD segment (#%d)\n", i);
+         if (DEBUG) printf("   * Found executable LOAD segment (#%d)\n", i);
          load_seg = curr_seg;
          break ;
       }
@@ -69,7 +68,7 @@ find_padding_area(void *data, int *padoff, int psize)
    while (seg_size < curr_seg->p_filesz)
       seg_size += curr_seg->p_align;
 
-   printf("   * Segment size: %d\n", seg_size);
+   if (DEBUG) printf("   * Segment size: %d\n", seg_size);
 
    int count = 0;
    void *t_seg_ptr = data + curr_seg->p_offset;
@@ -85,8 +84,11 @@ find_padding_area(void *data, int *padoff, int psize)
       else count = 0;
       t_seg_ptr++;
    }
-   printf("+ Padding offset at offset 0x%x (%d bytes)\n", *padoff, count);
-   printf("   * Needed (%d bytes)\n", psize);
+   if (DEBUG)
+   {
+      printf("+ Padding offset at offset 0x%x (%d bytes)\n", *padoff, count);
+      printf("   * Needed (%d bytes)\n", psize);
+   }
    return load_seg;
 }
 
@@ -101,7 +103,7 @@ insert_jmp_to_ep(void *target, int ssize, long oep)
       if (substr == ep_placeholder)
       {
          *(uint32_t *)(target + i) = oep;
-         printf("+ Found placeholder (%#x) in target file. Replaced with (%#lx)\n", ep_placeholder, oep); 
+         if (DEBUG) printf("+ Found placeholder (%#x) in target file. Replaced with (%#lx)\n", ep_placeholder, oep); 
          return ;
       }
    }
@@ -110,14 +112,44 @@ insert_jmp_to_ep(void *target, int ssize, long oep)
 }
 
 void
+check_binary(Elf64_Ehdr *t_ehdr)
+{
+   if (t_ehdr->e_ident[4] == ELFCLASS64)
+   {
+      if (DEBUG) printf("+ Target is 64-bit binary\n");
+   }
+   else if (t_ehdr->e_ident[4] == ELFCLASS32)
+   {
+      fprintf(stderr, "32-bit binaries not supported\n");
+      exit(1);
+   }
+   else 
+   {
+      fprintf(stderr, "unexpected e_ident[4]\n");
+      exit(1);
+   }
+
+   if (t_ehdr->e_type == ET_EXEC)
+   {
+      if (DEBUG) printf("+ e_type: ET_EXEC\n");
+   }
+   else
+   {
+      fprintf(stderr, "e_type ET_EXEC only supported\n");
+      exit(1);
+   }
+}
+
+void
 inject_payload(void *target, void *payload, int tsize, int psize)
 {
-   uint32_t       key[] = {0xAABBFFAA, 0xBBCCFFAA, 0xFFEE22AA, 0xAAEEDDFF};
    Elf64_Ehdr     *t_ehdr = ((Elf64_Ehdr *)target);
    int            padoff;
 
+   check_binary(t_ehdr);
+
    Elf64_Addr ep = t_ehdr->e_entry;
-   printf("+ Original entry point: %p\n", (void *)ep);
+   if (DEBUG) printf("+ Original entry point: %lx\n", t_ehdr->e_entry);
 
    Elf64_Shdr *p_text_sec = find_section(payload, ".text");
    Elf64_Phdr *t_load_seg = find_padding_area(target, &padoff, p_text_sec->sh_size);
@@ -129,8 +161,8 @@ inject_payload(void *target, void *payload, int tsize, int psize)
    t_load_seg->p_memsz += p_text_sec->sh_size;
 
    insert_jmp_to_ep(target + padoff, p_text_sec->sh_size, (long)ep);
-   encrypt(target, padoff, key, base);
+   encrypt(target, padoff, base);
 
    t_ehdr->e_entry = (Elf64_Addr)(base + padoff);
-   printf("+ e_entry set to: %lx\n", t_ehdr->e_entry);
+   if (DEBUG) printf("+ e_entry set to: %lx\n", t_ehdr->e_entry);
 }

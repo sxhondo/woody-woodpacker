@@ -2,14 +2,19 @@ section   .text
   global  _start
 _start:
   push rax
-  push rdi
-  push rsi
+  push rbx
+  push rcx
   push rdx
+  push rsi
+  push rdi
+  push r11
+
   mov rax, 1
   mov rdi, 1
   lea rsi, [rel msg]
   mov rdx, msg_end - msg      
-  syscall                    ; print WOODY
+  syscall
+  
 ; tea
   mov ecx, 0
   mov rdi, [rel data]        ; get file pointer
@@ -65,17 +70,20 @@ write_to_file:
   inc ecx
   jmp iter_data
 done:
-  pop rdx
-  pop rsi
+  pop r11
   pop rdi
+  pop rsi
+  pop rdx
+  pop rcx
+  pop rbx
   pop rax
 
-	mov rax, 0x11111111
-	jmp rax
+  jmp [rel jump]
 
-; data
+; placeholders
 msg       db 'wow', 0x0a, 0
 msg_end   db 0x0
 k         dd 0x75726976, 0x73796273, 0x6e6f6878, 0x293a6f64
 fsize     dd 0x2A2A2A2A
-data      dd 0x15151515
+data      dq 0x1515151515151515
+jump      dd 0x11111111

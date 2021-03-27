@@ -14,7 +14,7 @@ OBJ_DIR = obj/
 INC = $(addprefix $(INC_DIR), woody-woodpacker.h)
 PLD = $(addprefix $(SRC_DIR), payload.s)
 
-C_SRC = main.c open.c inject.c encrypt.c
+C_SRC = main.c
 ASM_SRC = tea_encrypter.s
 
 COBJ = $(C_SRC:%.c=$(OBJ_DIR)%.o)
@@ -32,11 +32,12 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.c $(INC) Makefile
 $(OBJ_DIR)%.o: $(SRC_DIR)%.s $(INC) Makefile
 	$(NASM) $(NASMFLAGS) $< -o $@
 
-$(PAYLOAD): src/$(PAYLOAD).s
-	$(NASM) $(NASMFLAGS) $< -o $(OBJ_DIR)$@.o && ld $(OBJ_DIR)$@.o -o $@
+pload:
+	$(NASM) $(NASMFLAGS) $(SRC_DIR)$(PAYLOAD).s -o $(OBJ_DIR)$(PAYLOAD).o 
+	ld $(OBJ_DIR)$(PAYLOAD).o -o $(PAYLOAD)
 
-sample: Makefile
-	$(CC) -no-pie resources/sample.c -o resources/no-pie-sample64
+sample:
+	$(CC) -no-pie resources/sample.c -o resources/9.3-no-pie-sample64
 
 encrypter: src/encrypt.c src/tea_encrypter.s
 	nasm -f elf64 src/tea_encrypter.s -o obj/tea_encrypter.o

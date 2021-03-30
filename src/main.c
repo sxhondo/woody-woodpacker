@@ -1,56 +1,34 @@
 #include "woody-woodpacker.h"
 
-# define OUTPUT   "resources/xsample64"
-
-int               mmap_target(char *path, void **dst);
-int               mmap_payload(char *path, void **dst);
-void              identify_binary(void *target);
-Elf64_Off         find_padding_area(void *target);
-Elf64_Shdr        *find_section(void *data, char *name);
-void              replace_jump_placeholder(void *payload, uint64_t size, uint64_t ep);
-void              replace_data_placeholder(void *target, int size, uint64_t ptr);
-void              replace_filesize_placeholder(void *target, int size, uint32_t file_size);
-void              replace_key_placeholder(void *target, int size, uint32_t key[4]);
-uint32_t          *generate_key();
-
-extern void       tea_encrypt(void *msg, const uint32_t key[4], int fsize);
-
-typedef struct    s_woody
-{
-   uint64_t       target_size;
-   Elf64_Addr     target_entry;
-
-   uint64_t       payload_size;
-   uint64_t       payload_txt_size;
-   Elf64_Off      txt_segment_end;
-   Elf64_Off      payload_offset;
-   Elf64_Addr     payload_load_address;
-}                 t_woody;
-
 t_woody           woody;
 
 int
 main(int argc, char **argv)
 {
-   if (argc != 3)
+   if (argc != 2)
    {
-      fprintf(stderr, "usage:\n  %s elf_file payload\n", argv[0]);
+      fprintf(stderr, "usage:\n  %s elf_file\n", argv[0]);
       exit(1);
    }
 
-   int   tfd, pfd;
-   void  *target, *payload;
-   
+   int         tfd, pfd;
+   void        *target, *payload;
+
    tfd = mmap_target(argv[1], &target);
    identify_binary(target);
 
-   pfd = mmap_payload(argv[2], &payload);
+   pfd = woody.is_dyn ? mmap_payload(DYN_PAYLOAD, &payload) 
+                           : mmap_payload(EXEC_PAYLOAD, &payload);
+
    Elf64_Shdr *p_text_sec = find_section(payload, ".text");
    woody.payload_txt_size = p_text_sec->sh_size;
+
    find_padding_area(target);
 
-   ((Elf64_Ehdr *)target)->e_entry = woody.payload_load_address;
-   if (DEBUG) printf("+ original entry point set to (%#lx)\n", woody.payload_offset);
+   Elf64_Ehdr *ehdr = (Elf64_Ehdr *)target;
+   ehdr->e_entry = woody.is_dyn ? woody.payload_offset : woody.payload_load_address;
+
+   if (DEBUG) printf("+ original entry point set to (%#lx)\n", ehdr->e_entry);
 
    uint32_t    *key = generate_key();
    Elf64_Shdr  *t_txt_sec = find_section(target, ".text");
@@ -68,8 +46,8 @@ main(int argc, char **argv)
                            woody.payload_txt_size,
                            key);
 
-   memmove(target + woody.payload_offset, 
-            payload + p_text_sec->sh_offset, 
+   memmove(target + woody.payload_offset,
+            payload + p_text_sec->sh_offset,
             woody.payload_txt_size);
 
    if (DEBUG) printf("+ encrypting starts at %#lx and lasts (%ld) bytes\n", 
@@ -77,7 +55,9 @@ main(int argc, char **argv)
    tea_encrypt(target + t_txt_sec->sh_offset, 
                key,
                t_txt_sec->sh_size / sizeof(void *));
-
+   // tea_encrypt(target + t_txt_sec->sh_offset, 
+   //             key,
+   //             5);
 
    close(tfd);
    close(pfd);
@@ -97,7 +77,7 @@ find_padding_area(void *target)
    if (DEBUG) printf("+ looking for padding area\n");
    for (int i = 0; i < t_header->e_phnum; i++)
    {
-      if (ph_curr->p_type == PT_LOAD && ph_curr->p_flags & (PF_X))
+      if (ph_curr->p_type == PT_LOAD && (ph_curr->p_flags & PF_X))
       {
          load_found = 1;
          ph_curr->p_flags |= PF_W;
@@ -112,7 +92,7 @@ find_padding_area(void *target)
          ph_curr->p_filesz += woody.payload_txt_size;
          ph_curr->p_memsz += woody.payload_txt_size;
       }
-      else if (load_found == 1 && ph_curr->p_type == PT_LOAD && ph_curr->p_flags & (PF_R))
+      else if (load_found == 1 && ph_curr->p_type == PT_LOAD && (ph_curr->p_flags & PF_R))
       {
          padding_size = ph_curr->p_offset - woody.txt_segment_end;
          if (DEBUG) 
@@ -147,8 +127,8 @@ find_section(void *data, char *name)
       char *sname = (char *)(sh_strtab_p + shdr[i].sh_name);
       if (!strcmp(sname, name)) 
       {
-         if (DEBUG) printf("   * .text section found at (%#lx) (%ld) bytes\n", 
-            shdr[i].sh_offset, shdr[i].sh_size);
+         if (DEBUG) printf("   * .text section found at %#lx (%ld) bytes\n", 
+                                             shdr[i].sh_offset, shdr[i].sh_size);
          return &shdr[i];
       }
    }
@@ -162,7 +142,13 @@ identify_binary(void *target)
    Elf64_Ehdr *t_header = (Elf64_Ehdr *)target;
    if (t_header->e_type == ET_EXEC)
    {
+      woody.is_dyn = 0;
       if (DEBUG) printf("+ e_type of binary is ET_EXEC\n");
+   }
+   else if (t_header->e_type == ET_DYN)
+   {
+      woody.is_dyn = 1;
+      if (DEBUG) printf("+ e_type of binary is ET_DYN\n");
    }
    else
    {

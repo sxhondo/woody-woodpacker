@@ -4,8 +4,9 @@ CCFLAGS = -g
 NASM = nasm
 NASMFLAGS = -f elf64
 
-NAME = injector
-PAYLOAD = payload
+NAME = woody-woodpacker
+EXEC_DECRYPTER = exec_tea_decrypter
+DYN_DECRYPTER = dyn_tea_decrypter
 
 INC_DIR = inc/
 SRC_DIR = src/
@@ -22,7 +23,7 @@ AOBJ = $(ASM_SRC:%.s=$(OBJ_DIR)%.o)
 
 all: $(NAME) $(PAYLOAD)
 
-$(NAME): $(COBJ) $(AOBJ)
+$(NAME): $(COBJ) $(AOBJ) payload
 	$(CC) $(CCFLAGS) -no-pie -I $(INC_DIR) $(COBJ) $(AOBJ) -o $@
 
 $(OBJ_DIR)%.o: $(SRC_DIR)%.c $(INC) Makefile
@@ -32,20 +33,18 @@ $(OBJ_DIR)%.o: $(SRC_DIR)%.c $(INC) Makefile
 $(OBJ_DIR)%.o: $(SRC_DIR)%.s $(INC) Makefile
 	$(NASM) $(NASMFLAGS) $< -o $@
 
-pload:
-	$(NASM) $(NASMFLAGS) $(SRC_DIR)$(PAYLOAD).s -o $(OBJ_DIR)$(PAYLOAD).o 
-	ld $(OBJ_DIR)$(PAYLOAD).o -o $(PAYLOAD)
+payload:
+	$(NASM) $(NASMFLAGS) $(SRC_DIR)$(EXEC_DECRYPTER).s -o $(OBJ_DIR)$(EXEC_DECRYPTER).o 
+	$(NASM) $(NASMFLAGS) $(SRC_DIR)$(DYN_DECRYPTER).s -o $(OBJ_DIR)$(DYN_DECRYPTER).o
+	ld $(OBJ_DIR)$(EXEC_DECRYPTER).o -o $(EXEC_DECRYPTER)
+	ld $(OBJ_DIR)$(DYN_DECRYPTER).o -o $(DYN_DECRYPTER)	
 
 sample:
 	$(CC) -no-pie resources/sample.c -o resources/9.3-no-pie-sample64
 
-encrypter: src/encrypt.c src/tea_encrypter.s
-	nasm -f elf64 src/tea_encrypter.s -o obj/tea_encrypter.o
-	$(CC) -g -no-pie -I $(INC_DIR) src/c_encrypt.c src/open.c obj/tea_encrypter.o -o encrypter
-
-decrypter: src/encrypt.c src/tea_decrypter.s
-	nasm -f elf64 src/tea_decrypter.s -o obj/tea_decrypter.o
-	$(CC) -g -no-pie -I $(INC_DIR) src/c_encrypt.c src/open.c obj/tea_decrypter.o -o decrypter
+debug: src/c_encrypt.c src/dyn_tea_decrypter.s
+	nasm -f elf64 src/dyn_tea_decrypter.s -o obj/dyn_tea_decrypter.o
+	$(CC) -g -I $(INC_DIR) src/c_encrypt.c obj/dyn_tea_decrypter.o -o debug
 
 clean:
 	rm -rf $(OBJ_DIR)
@@ -53,4 +52,4 @@ clean:
 fclean: clean
 	rm -f $(NAME) $(PAYLOAD)
 
-.PHONY: all clean fclean re encrypter decrypter sample
+.PHONY: all clean fclean re encrypter decrypter sample debug

@@ -41,7 +41,7 @@ Elf64_Off         find_padding_area(void *target);
 Elf64_Shdr        *find_section(void *data, char *name);
 void              replace_jump_placeholder(void *payload, uint64_t size, uint64_t ep);
 void              replace_data_placeholder(void *target, int size, uint64_t ptr);
-void              replace_filesize_placeholder(void *target, int size, uint32_t file_size);
+void              replace_filesize_placeholder(void *target, int size, uint64_t file_size);
 void              replace_key_placeholder(void *target, int size, uint32_t key[4]);
 uint32_t          *generate_key();
 

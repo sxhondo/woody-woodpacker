@@ -52,12 +52,9 @@ main(int argc, char **argv)
 
    if (DEBUG) printf("+ encrypting starts at %#lx and lasts (%ld) bytes\n", 
       t_txt_sec->sh_offset, t_txt_sec->sh_size / sizeof(void *));
-   tea_encrypt(target + t_txt_sec->sh_offset, 
+   tea_encrypt(target + t_txt_sec->sh_offset,
                key,
                t_txt_sec->sh_size / sizeof(void *));
-   // tea_encrypt(target + t_txt_sec->sh_offset, 
-   //             key,
-   //             5);
 
    close(tfd);
    close(pfd);
@@ -263,41 +260,41 @@ replace_data_placeholder(void *target, int size, uint64_t ptr)
 void
 replace_jump_placeholder(void *payload, uint64_t size, uint64_t ep)
 {
-   uint32_t     ep_placeholder = 0x11111111;
+   uint64_t     ep_placeholder = 0x1111111111111111;
 
    if (DEBUG) printf("+ inserting oep (%lx)\n", ep);
    for (int i = 0; i < size; i++)
    {
-      uint32_t substr = *(uint32_t *)(payload + i);
+      uint64_t substr = *(uint64_t *)(payload + i);
       if (substr == ep_placeholder)
       {
-         *(uint32_t *)(payload + i) = ep;
-         if (DEBUG) printf("   * found placeholder (%#x) in payload file. Replaced with (%#lx)\n", 
+         *(uint64_t *)(payload + i) = ep;
+         if (DEBUG) printf("   * found placeholder (%#lx) in payload file. Replaced with (%#lx)\n", 
             ep_placeholder, ep); 
          return ;
       }
    }
-   fprintf(stderr, "- placeholder (%#x) not found\n", ep_placeholder);
+   fprintf(stderr, "- placeholder (%#lx) not found\n", ep_placeholder);
    exit(1);
 }
 
 void
-replace_filesize_placeholder(void *target, int size, uint32_t file_size)
+replace_filesize_placeholder(void *target, int size, uint64_t file_size)
 {
-   uint32_t    ph = 0x2A2A2A2A;
+   uint64_t    ph = 0x2A2A2A2A2A2A2A2A;
 
    if (DEBUG) printf("+ inserting file size to encrypt: (%d)\n", file_size);
    for (int i = 0; i < size; i++)
    {
-      uint32_t sub = *(uint32_t *)(target + i);
+      uint64_t sub = *(uint64_t *)(target + i);
       if (sub == ph)
       {
-         *(uint32_t *)(target + i) = file_size;
-         if (DEBUG) printf("   * found placeholder (%#x). Replaced with (%d)\n", ph, file_size);
+         *(uint64_t *)(target + i) = file_size;
+         if (DEBUG) printf("   * found placeholder (%#lx). Replaced with (%d)\n", ph, file_size);
          return ;
       }
    }
-   fprintf(stderr, "-placeholder not found (%#x)\n", ph);
+   fprintf(stderr, "-placeholder not found (%#lx)\n", ph);
    exit(1);
 }
 
@@ -351,6 +348,7 @@ generate_key()
 {
    static uint32_t key[4] = {0, 0, 0, 0};
 
+   return key;
    srand(time(NULL));
    key[0] = rand();
    key[1] = rand();

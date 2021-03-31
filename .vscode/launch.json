@@ -5,11 +5,13 @@
    "version": "0.2.0",
    "configurations": [
       {
-         "name": "(gdb) ./crypt",
+         "name": "(gdb) ./woody",
          "type": "cppdbg",
          "request": "launch",
          "program": "${workspaceFolder}/decrypter",
-         "args": [],
+         "args": [
+            ""
+         ],
          "stopAtEntry": false,
          "cwd": "${workspaceFolder}",
          "environment": [],

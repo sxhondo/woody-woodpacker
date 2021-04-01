@@ -40,6 +40,7 @@ _start:
 
   mov ecx, 0
 parse_byte:
+  xor r8, r8
   mov r8b, [rsp]
   cmp r8b, byte 0x2d
   je calculate_offset_done
@@ -65,7 +66,7 @@ load:
 calculate_offset_done:
   sub spl, cl
   add sp, 0x10
-  
+                   ; 0x000055fbec739000
   mov r8, rbx
   mov r10, [rel jump]
   add r8, r10

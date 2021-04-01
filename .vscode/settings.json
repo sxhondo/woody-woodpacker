@@ -4,6 +4,7 @@
       "woody-woodpacker.h": "c",
       "fcntl.h": "c",
       "stat.h": "c",
-      "mman.h": "c"
+      "mman.h": "c",
+      "unistd.h": "c"
    }
 }

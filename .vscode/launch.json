@@ -5,12 +5,12 @@
    "version": "0.2.0",
    "configurations": [
       {
-         "name": "(gdb) ./woody",
+         "name": "(gdb) ./woody-woodpacker",
          "type": "cppdbg",
          "request": "launch",
-         "program": "${workspaceFolder}/decrypter",
+         "program": "${workspaceFolder}/woody-woodpacker",
          "args": [
-            ""
+            "woody",
          ],
          "stopAtEntry": false,
          "cwd": "${workspaceFolder}",

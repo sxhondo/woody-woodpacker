@@ -113,25 +113,6 @@ find_padding_area(void *target, t_woody *wdy)
    }
 }
 
-
-uint32_t*
-generate_key()
-{
-   static uint32_t key[4] = {0, 0, 0, 0};
-
-   srand(time(NULL));
-   key[0] = rand();
-   key[1] = rand();
-   key[2] = rand();
-   key[3] = rand();
-
-   printf("key: 0x");
-   for (int i = 0; i < 3; i++) 
-      printf("%x", key[i]);
-   printf("\n");
-   return key;
-}
-
 int
 main(int argc, char **argv)
 {
@@ -168,7 +149,7 @@ main(int argc, char **argv)
                wdy.key, 
                shdr->sh_size / sizeof(void *));
 
-   memmove(target + wdy.payload_offset, 
+   _memcpy(target + wdy.payload_offset,
             payload + wdy.payload_txt_sec->sh_offset,
             wdy.payload_txt_size);
 

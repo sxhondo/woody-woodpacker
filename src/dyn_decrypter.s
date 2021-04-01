@@ -66,7 +66,7 @@ load:
 calculate_offset_done:
   sub spl, cl
   add sp, 0x10
-                   ; 0x000055fbec739000
+
   mov r8, rbx
   mov r10, [rel jump]
   add r8, r10

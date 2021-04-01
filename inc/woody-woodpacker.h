@@ -43,13 +43,19 @@ typedef struct    s_woody
    uint32_t       *key;
 }                 t_woody;
 
+/* mmap_file.c */
 int               mmap_target(char *path, void **dst, t_woody *wdy);
 int               mmap_payload(char *path, void **dst, t_woody *wdy);
-char              *mmap_key_param(char *path);
 
-Elf64_Shdr        *patch_payload(void *payload, void *target, t_woody *wdy);
+/* woody_woodpacker.c */
+Elf64_Shdr       *patch_payload(void *payload, void *target, t_woody *wdy);
 Elf64_Shdr        *find_section(void *data, char *name);
 
+/* utils.c */
+void              *_memcpy(void *dst, void *src, size_t n);
+uint32_t*         generate_key();
+
+/* encrypter.s */
 extern void       tea_encrypt(void *msg, const uint32_t key[4], int fsize);
 
 # endif

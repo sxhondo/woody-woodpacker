@@ -5,7 +5,6 @@ NASM 					= nasm
 NASMFLAGS 			= -f elf64
 
 NAME 					= woody-woodpacker
-# PAYLOAD				= exec_decrypter dyn_decrypter
 
 EXEC_DECRYPTER 	= exec_decrypter
 DYN_DECRYPTER 		= dyn_decrypter
@@ -16,7 +15,7 @@ OBJ_DIR 				= obj/
 
 INC 					= $(addprefix $(INC_DIR), woody-woodpacker.h)
 
-C_SRC 				= woody_woodpacker.c mmap_file.c patch_payload.c
+C_SRC 				= woody_woodpacker.c mmap_file.c patch_payload.c utils.c
 ENCR_SRC 			= encrypter.s
 DCR_SRC 				= dyn_decrypter.s exec_decrypter.s
 

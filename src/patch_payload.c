@@ -1,7 +1,7 @@
 #include "woody-woodpacker.h"
 
 # define JMP_PH   0x1111111111111111   /* Address to jump after payload */
-# define TXT_PH   0x1515151515151515   /* Address of starts of encrypted area */
+# define TXT_PH   0x1515151515151515   /* Address where encrypted area starts */
 # define SIZE_PH  0x2A2A2A2A2A2A2A2A   /* Size of encrypted area */
 # define K0       0x75726976           /* First 32-bits of key */
 # define K1       0x73796273           /* Second 32-bits of key */

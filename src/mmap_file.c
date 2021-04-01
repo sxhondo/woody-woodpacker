@@ -74,38 +74,3 @@ mmap_payload(char *path, void **data, t_woody *wdy)
                            path, wdy->payload_size, *data);
    return fd;
 }
-
-char*
-mmap_key_param(char *path)
-{
-   static char buf[512];
-
-   int fd = open(path, O_RDONLY);
-   if (fd < 0)
-   {
-      perror("open() payload: ");
-      exit(EXIT_FAILURE);  
-   }
-
-   struct stat stat;
-   if (fstat(fd, &stat) != 0)
-   {
-      perror("lstat() payload file: ");
-      exit(EXIT_FAILURE);
-   }
-
-   if (stat.st_size == 0 || stat.st_size > 512)
-   {
-      fprintf(stderr, "Invalid param key\n");
-      exit(EXIT_FAILURE);
-   }
-
-   int r = read(fd, &buf, stat.st_size);
-   if (r <= 0)
-   {
-      perror("read() param key: ");
-      exit(EXIT_FAILURE);
-   }
-   close(fd);
-   return buf;
-}

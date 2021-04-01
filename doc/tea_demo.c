@@ -14,7 +14,7 @@ encrypt(uint32_t* msg, uint32_t *key)
    }
    msg[0] = msg0; 
    msg[1] = msg1;
-}       
+}
 
 static void
 decrypt(uint32_t* msg, uint32_t *key) {

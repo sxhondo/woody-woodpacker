@@ -146,7 +146,6 @@ main(int argc, char **argv)
       fprintf(stderr, "usage:\n  %s elf_file\n", argv[0]);
       exit(1);
    }
-
    tfd = mmap_target(argv[1], &target, &wdy);
    identify_binary(target, &wdy);
    pfd = wdy.is_dyn == TRUE ?
@@ -180,5 +179,5 @@ main(int argc, char **argv)
    }
    close(tfd);
    close(pfd);
-   return 0;
+   exit(EXIT_SUCCESS);
 }

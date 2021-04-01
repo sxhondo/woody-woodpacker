@@ -141,7 +141,7 @@ done:
   jmp r13
 
   ; placeholders 
-  msg       db 'wow', 0x0a, 0
+  msg       db '....WOODY....', 0x0a, 0
   msg_end   db 0x0
   maps      db '/proc/self/maps', 0x0
   jump      dq 0x1111111111111111

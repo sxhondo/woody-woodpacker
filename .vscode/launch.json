@@ -10,7 +10,9 @@
          "request": "launch",
          "program": "${workspaceFolder}/woody-woodpacker",
          "args": [
-            "woody",
+            "test/9.3-pie-pwd",
+            "-t",
+            "key_param"
          ],
          "stopAtEntry": false,
          "cwd": "${workspaceFolder}",
@@ -24,39 +26,6 @@
                  "ignoreFailures": true
              }
          ]
-      },
-      {
-         "name": "(gdb) ./injector",
-         "type": "cppdbg",
-         "request": "launch",
-         "program": "${workspaceFolder}/injector",
-         "args": [
-            "resources/9.3-no-pie-sample64",
-            "payload"
-         ],
-         "stopAtEntry": false,
-         "cwd": "${workspaceFolder}",
-         "environment": [],
-         "externalConsole": false,
-         "MIMode": "gdb",
-         "setupCommands": [
-            {
-               "description": "Enable pretty-printing for gdb",
-               "text": "-enable-pretty-printing",
-               "ignoreFailures": true
-            }
-         ]
-      },
-      {
-         "type": "lldb",
-         "request": "launch",
-         "name": "(lldb) Launch",
-         "program": "${workspaceFolder}/injector",
-         "args": [
-            "resources/4.7-pwd",
-            "payload"
-         ],
-         "cwd": "${workspaceFolder}"
       }
    ]
 }

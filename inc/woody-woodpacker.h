@@ -22,6 +22,7 @@
 # define DYN_PAYLOAD    "dyn_decrypter"
 # define EXEC_PAYLOAD   "exec_decrypter"
 
+
 typedef enum      e_boolean
 {
    FALSE,
@@ -44,6 +45,7 @@ typedef struct    s_woody
 
 int               mmap_target(char *path, void **dst, t_woody *wdy);
 int               mmap_payload(char *path, void **dst, t_woody *wdy);
+char              *mmap_key_param(char *path);
 
 Elf64_Shdr        *patch_payload(void *payload, void *target, t_woody *wdy);
 Elf64_Shdr        *find_section(void *data, char *name);

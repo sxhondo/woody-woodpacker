@@ -5,6 +5,9 @@
       "fcntl.h": "c",
       "stat.h": "c",
       "mman.h": "c",
-      "unistd.h": "c"
+      "unistd.h": "c",
+      "lib.h": "c",
+      "foo.h": "c",
+      "stdio.h": "c"
    }
 }

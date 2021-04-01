@@ -1,7 +1,6 @@
 section   .text
   global  _start
 _start:
-  ; db 'sxhondo'
   push rax
   push rbx
   push rcx
@@ -82,7 +81,7 @@ done:
   jmp [rel jump]
 
 ; placeholders
-msg       db 'wow', 0x0a, 0
+msg       db '....WOODY....', 0x0a, 0
 msg_end   db 0x0
 k         dd 0x75726976, 0x73796273, 0x6e6f6878, 0x293a6f64
 fsize     dq 0x2A2A2A2A2A2A2A2A

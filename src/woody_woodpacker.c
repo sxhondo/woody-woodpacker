@@ -1,29 +1,5 @@
 #include "woody-woodpacker.h"
 
-Elf64_Shdr*
-find_section(void *data, char *name)
-{
-   Elf64_Ehdr *elf_hdr = (Elf64_Ehdr *)data;
-   Elf64_Shdr *shdr = (Elf64_Shdr *)(data + elf_hdr->e_shoff);
-   Elf64_Shdr *sh_strtab = &shdr[elf_hdr->e_shstrndx];
-   const char *const sh_strtab_p = data + sh_strtab->sh_offset;
-
-   if (DEBUG) printf("+ looking for section '%s'\n", name);
-
-   for (int i = 0; i < elf_hdr->e_shnum; i++)
-   {
-      char *sname = (char *)(sh_strtab_p + shdr[i].sh_name);
-      if (!strcmp(sname, name)) 
-      {
-         if (DEBUG) printf("   * .text section found at %#lx (%ld) bytes\n", 
-                                             shdr[i].sh_offset, shdr[i].sh_size);
-         return &shdr[i];
-      }
-   }
-   fprintf(stderr, "- could not find section'%s'\n", name);
-   exit(EXIT_FAILURE);
-}
-
 static void
 identify_binary(void *target, t_woody *wdy)
 {
@@ -127,9 +103,10 @@ main(int argc, char **argv)
       fprintf(stderr, "usage:\n  %s elf_file\n", argv[0]);
       exit(1);
    }
+   
    tfd = mmap_target(argv[1], &target, &wdy);
    identify_binary(target, &wdy);
-   pfd = wdy.is_dyn == TRUE ?
+   pfd = wdy.is_dyn ?
       mmap_payload(DYN_PAYLOAD, &payload, &wdy) 
       : mmap_payload(EXEC_PAYLOAD, &payload, &wdy);
 
@@ -138,7 +115,7 @@ main(int argc, char **argv)
    find_padding_area(target, &wdy);
 
    ehdr = (Elf64_Ehdr *)target;
-   ehdr->e_entry = wdy.is_dyn == TRUE ? 
+   ehdr->e_entry = wdy.is_dyn ? 
       wdy.payload_offset : wdy.payload_load_address;
    if (DEBUG) printf("+ original entry point set to (%#lx)\n", ehdr->e_entry);
 
